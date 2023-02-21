@@ -271,7 +271,7 @@ function syncFromCalendar() {
    // Get spreadsheet and data
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = spreadsheet.getActiveSheet();
-  sheet.deleteRows(2,sheet.getLastRow());
+  sheet.deleteRows(2,sheet.getLastRow()-1);
   var range = sheet.getDataRange();
   var data = range.getValues();
   var eventFound = new Array(data.length);

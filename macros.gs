@@ -1,7 +1,12 @@
 function TaskPivot() {
   const doc = SpreadsheetApp.getActive();
   const sheet = doc.getActiveSheet();
-  sheet.deleteColumns(13,35);
+  if (sheet.getMaxColumns()>35){
+    sheet.deleteColumns(13,35);
+  }else{
+    var lastCol = sheet.getLastColumn();
+    sheet.insertColumns(lastCol +1 , (50-lastCol));
+  }
   
   const headers = sheet.getRange('A1:L1').getValues()[0];
   const colIdx = headers.reduce((o, k, i) => {
