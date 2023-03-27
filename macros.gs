@@ -1,3 +1,8 @@
+if (typeof require !== "undefined") {
+  UnitTestingApp = require("./unitTestingApp.min.js");
+  CreatePivotTableHelper = require("./createPivoteTableHelper.js");
+  SendMailNodification = require("./sendMailNodificationHelper.js");
+}
 let textMsg = "";
 
 function TaskPivot() {
@@ -58,8 +63,9 @@ function validateTasks(textSearch, sheet) {
   for (let i = 0; i < textSearch.length * 1; i++) {
     let row = textSearch[i].getRow();
     let column = textSearch[i].getColumn();
-
-    if (column == 18) {
+    if (column == 13) {
+      taskColumn(sheet, column, row);
+    } else if (column == 18) {
       videoTaskValidation(sheet, row, column);
     } else if (column == 23) {
       readingTaskValidation(sheet, row, column);
@@ -73,8 +79,14 @@ function validateTasks(textSearch, sheet) {
       actionItemValidation(sheet, row, column);
     }
   }
-
-  sendEmailNotification(textMsg);
+  const sendMailNodification = new SendMailNodification();
+  let sheetName = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  let email = sheetName.getName();
+  let sendEmailData = sendMailNodification.sendEmailNotification(
+    textMsg,
+    email
+  );
+  MailApp.sendEmail(email, sendEmailData["textSub"], sendEmailData["message"]);
 }
 
 function videoTaskValidation(sheet, row, column) {
@@ -84,7 +96,7 @@ function videoTaskValidation(sheet, row, column) {
     .getValues();
 
   for (let i = 1; i < pivotV_data.length; i++) {
-    let videoLoop = i
+    let videoLoop = i;
     videoPresentationIsScheduledBeforeSixPM(pivotV_data, videoLoop);
   }
 }
@@ -112,7 +124,7 @@ function feedbackTaskValidation(sheet, row, column) {
     .getValues();
 
   for (let i = 1; i < pivotF_data.length; i++) {
-    let feedbackLoop = i
+    let feedbackLoop = i;
     scheduleFeedbackTask(pivotF_data, feedbackLoop);
   }
 }
@@ -120,16 +132,6 @@ function feedbackTaskValidation(sheet, row, column) {
 function actionItemValidation(sheet, row, column) {
   actionItemTicketCount(sheet, row, column);
   Logger.log(sheet.getRange(row, column + 3).getValue());
-}
-
-function sendEmailNotification(textMsg) {
-  let sentences = textMsg.split(". ");
-  let uniqueSentences = [...new Set(sentences)];
-  let message = uniqueSentences.join(". ");
-  let textSub = "Pivot Table Rule Alert.";
-  let sheetName = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  let email = sheetName.getName();
-  MailApp.sendEmail(email, textSub, message);
 }
 
 function averageTaskHourIsGreaterThenThreeHour(taskHours, taskCount) {
@@ -268,17 +270,15 @@ function actionItemTicketCount(sheet, row, column) {
 }
 
 function taskColumn(sheet, column, row) {
-  if (column == 13) {
-    const taskCount = sheet.getRange(row, column + 4).getValue();
-    const data = sheet.getRange(`M1:Q${taskCount + 2}`).getValues();
-    const taskHours = sheet.getRange(row, column + 3).getValue();
-    averageTaskHourIsGreaterThenThreeHour(taskHours, taskCount);
-    oneWeekTaskHourIsThirtySix(taskHours);
-    taskCountIsGeaterThenTen(taskCount);
-    for (let j = 1; data.length * 1 > j; j++) {
-      let loop = j;
-      taskHourAreLessThenFour(data, loop);
-      taskDiscription(data, loop);
-    }
+  const taskCount = sheet.getRange(row, column + 4).getValue();
+  const data = sheet.getRange(`M1:Q${taskCount + 2}`).getValues();
+  const taskHours = sheet.getRange(row, column + 3).getValue();
+  averageTaskHourIsGreaterThenThreeHour(taskHours, taskCount);
+  oneWeekTaskHourIsThirtySix(taskHours);
+  taskCountIsGeaterThenTen(taskCount);
+  for (let j = 1; data.length * 1 > j; j++) {
+    let loop = j;
+    taskHourAreLessThenFour(data, loop);
+    taskDiscription(data, loop);
   }
 }
