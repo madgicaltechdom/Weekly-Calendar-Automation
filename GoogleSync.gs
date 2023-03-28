@@ -218,11 +218,11 @@ function errorAlert(msg, evt, ridx) {
   if (evt) {
     ui.alert(
       "Skipping row: " +
-      msg +
-      ' in event "' +
-      evt.title +
-      '", row ' +
-      (ridx + 1)
+        msg +
+        ' in event "' +
+        evt.title +
+        '", row ' +
+        (ridx + 1)
     );
   } else {
     ui.alert(msg);
@@ -242,12 +242,11 @@ function updateCalEvent(calEvent, convertedCalEvent, sheetEvent) {
   return updatedFields.length;
 }
 
-
 function getUpdatedFields(convertedCalEvent, sheetEvent) {
   const updatedFields = [];
   if (
     convertedCalEvent.starttime.toString() !==
-    sheetEvent.starttime.toString() ||
+      sheetEvent.starttime.toString() ||
     getEndTime(convertedCalEvent) !== getEndTime(sheetEvent)
   ) {
     updatedFields.push("time");
@@ -365,7 +364,12 @@ function syncFromCalendar() {
 
   // Remove any data rows not found in the calendar
   let rowsDeleted = 0;
-  rowsDeleted = deleteNonexistentEvents(data, eventFound, sheetEventIds, rowsDeleted);
+  rowsDeleted = deleteNonexistentEvents(
+    data,
+    eventFound,
+    sheetEventIds,
+    rowsDeleted
+  );
 
   // Save spreadsheet changes
   range = sheet.getRange(1, 1, data.length, data[0].length);
@@ -404,8 +408,6 @@ function allRequiedFiled(idxMap, requiredFields, titleRowMap) {
   }
 }
 function deleteNonexistentEvents(data, eventFound, sheetEventIds, rowsDeleted) {
-
-
   for (let idx = eventFound.length - 1; idx > 0; idx--) {
     // event doesn't exist and has an event id
     if (!eventFound[idx] && sheetEventIds[idx - 1]) {
@@ -417,7 +419,13 @@ function deleteNonexistentEvents(data, eventFound, sheetEventIds, rowsDeleted) {
   return rowsDeleted;
 }
 
-function updateSpreadsheetData(calEvents, sheetEventIds, idxMap, data, eventFound) {
+function updateSpreadsheetData(
+  calEvents,
+  sheetEventIds,
+  idxMap,
+  data,
+  eventFound
+) {
   for (let cidx = 0; cidx < calEvents.length * 1; cidx++) {
     let calEvent = calEvents[cidx];
     let calEventId = calEvent.getId();
@@ -443,7 +451,6 @@ function rowDelete(rowsDeleted, data, sheet) {
     sheet.deleteRows(data.length + 1, rowsDeleted);
   }
 }
-
 
 // Synchronize from spreadsheet to calendar.
 function syncToCalendar() {
@@ -493,167 +500,367 @@ function syncToCalendar() {
   let numAdded = 0;
   let numUpdates = 0;
   let eventsAdded = false;
-  for (let ridx = 1; ridx < data.length; ridx++) {
-    let sheetEvent = reformatEvent(data[ridx], idxMap, keysToAdd);
-
-    // If enabled, skip rows with blank/invalid start and end times
-    if (
-      SKIP_BLANK_ROWS &&
-      !(sheetEvent.starttime instanceof Date) &&
-      !(sheetEvent.endtime instanceof Date)
-    ) {
-      continue;
-    }
-
-    // Do some error checking first
-    if (!sheetEvent.title) {
-      errorAlert("must have title", sheetEvent, ridx);
-      continue;
-    }
-    if (!(sheetEvent.starttime instanceof Date)) {
-      errorAlert("start time must be a date/time", sheetEvent, ridx);
-      continue;
-    }
-    if (sheetEvent.endtime !== "") {
-      if (!(sheetEvent.endtime instanceof Date)) {
-        errorAlert("end time must be empty or a date/time", sheetEvent, ridx);
-        continue;
-      }
-      if (sheetEvent.endtime < sheetEvent.starttime) {
-        errorAlert(
-          "end time must be after start time for event",
-          sheetEvent,
-          ridx
-        );
-        continue;
-      }
-    }
-
-    // Ignore events outside of the begin/end range desired.
-    if (sheetEvent.starttime > endDate) {
-      continue;
-    }
-    if (sheetEvent.endtime === "") {
-      if (sheetEvent.starttime < beginDate) {
-        continue;
-      }
-    } else {
-      if (sheetEvent.endtime < beginDate) {
-        continue;
-      }
-    }
-
-    // Determine if spreadsheet event is already in calendar and matches
-    let addEvent = true;
-    if (sheetEvent.id) {
-      let eventIdx = calEventIds.indexOf(sheetEvent.id);
-      if (eventIdx >= 0) {
-        calEventIds[eventIdx] = null; // Prevents removing event below
-        addEvent = false;
-        let calEvent = calEvents[eventIdx];
-        let convertedCalEvent = convertCalEvent(calEvent);
-        let eventDiffs = eventDifferences(convertedCalEvent, sheetEvent);
-        if (eventDiffs > 0) {
-          // When there are only 1 or 2 event differences, it's quicker to
-          // update the event. For more event diffs, delete and re-add the event. The one
-          // exception is if the event has guests (eventDiffs=99). We don't
-          // want to force guests to re-confirm, so go through the slow update
-          // process instead.
-          if (eventDiffs < 3 && eventDiffs !== EVENT_DIFFS_WITH_GUESTS) {
-            numUpdates += updateEvent(calEvent, convertedCalEvent, sheetEvent);
-          } else {
-            addEvent = true;
-            calEventIds[eventIdx] = sheetEvent.id;
-          }
-        }
-      }
-    }
-    console.info(
-      "%d updates, time: %d msecs",
-      numUpdates,
-      Date.now() - scriptStart
-    );
-
-    if (addEvent) {
-      let newEvent;
-      sheetEvent.sendInvites = SEND_EMAIL_INVITES;
-      if (sheetEvent.endtime === "") {
-        newEvent = calendar.createAllDayEvent(
-          sheetEvent.title,
-          sheetEvent.starttime,
-          sheetEvent
-        );
-      } else {
-        newEvent = calendar.createEvent(
-          sheetEvent.title,
-          sheetEvent.starttime,
-          sheetEvent.endtime,
-          sheetEvent
-        );
-      }
-      // Put event ID back into spreadsheet
-      idData[ridx][0] = newEvent.getId();
-      eventsAdded = true;
-
-      // Set event color
-      if (sheetEvent.color > 0 && sheetEvent.color < 12) {
-        newEvent.setColor("" + sheetEvent.color);
-      }
-
-      // Throttle updates.
-      numAdded++;
-      Utilities.sleep(THROTTLE_SLEEP_TIME);
-      if (numAdded % 10 === 0) {
-        console.info(
-          "%d events added, time: %d msecs",
-          numAdded,
-          Date.now() - scriptStart
-        );
-      }
-    }
-    // If the script is getting close to timing out, save the event IDs added so far to avoid lots
-    // of duplicate events.
-    if (Date.now() - scriptStart > MAX_RUN_TIME) {
-      idRange.setValues(idData);
-    }
-  }
+  ({ numUpdates, eventsAdded, numAdded } = forLoopForSyncToCalender(
+    data,
+    idxMap,
+    keysToAdd,
+    calEventIds,
+    calEvents,
+    numUpdates,
+    scriptStart,
+    calendar,
+    idData,
+    eventsAdded,
+    numAdded,
+    idRange
+  ));
 
   // Save spreadsheet changes
-  if (eventsAdded) {
-    idRange.setValues(idData);
-  }
+  eventAddedTrue(eventsAdded, idRange, idData);
 
   // Remove any calendar events not found in the spreadsheet
   let numToRemove = calEventIds.reduce(function (prevVal, curVal) {
-    if (curVal !== null) {
-      prevVal++;
-    }
+    prevVal = curValueIsNotNull(curVal, prevVal);
     return prevVal;
   }, 0);
+  numToRemoveIsGreaterThenZero(
+    numToRemove,
+    calEventIds,
+    calEvents,
+    scriptStart
+  );
+}
+
+function curValueIsNotNull(curVal, prevVal) {
+  if (curVal !== null) {
+    prevVal++;
+  }
+  return prevVal;
+}
+
+function numToRemoveIsGreaterThenZero(
+  numToRemove,
+  calEventIds,
+  calEvents,
+  scriptStart
+) {
   if (numToRemove > 0) {
     let ui = SpreadsheetApp.getUi();
     let response = ui.alert(
       "Delete " + numToRemove + " calendar event(s) not found in spreadsheet?",
       ui.ButtonSet.YES_NO
     );
-    if (response == ui.Button.YES) {
-      let numRemoved = 0;
-      calEventIds.forEach(function (id, idx) {
-        if (id != null) {
-          calEvents[idx].deleteEvent();
-          Utilities.sleep(THROTTLE_SLEEP_TIME);
-          numRemoved++;
-          if (numRemoved % 10 === 0) {
-            console.info(
-              "%d events removed, time: %d msecs",
-              numRemoved,
-              Date.now() - scriptStart
-            );
-          }
-        }
-      });
-    }
+    resposeEqualToUiButtonYes(
+      response,
+      ui,
+      calEventIds,
+      calEvents,
+      scriptStart
+    );
   }
+}
+
+function resposeEqualToUiButtonYes(
+  response,
+  ui,
+  calEventIds,
+  calEvents,
+  scriptStart
+) {
+  if (response == ui.Button.YES) {
+    let numRemoved = 0;
+    calEventIds.forEach(function (id, idx) {
+      numRemoved = idIsNotEqualToNull(
+        id,
+        calEvents,
+        idx,
+        numRemoved,
+        scriptStart
+      );
+    });
+  }
+}
+
+function idIsNotEqualToNull(id, calEvents, idx, numRemoved, scriptStart) {
+  if (id != null) {
+    calEvents[idx].deleteEvent();
+    Utilities.sleep(THROTTLE_SLEEP_TIME);
+    numRemoved++;
+    numRemovedMpersentTenEqualToZero(numRemoved, scriptStart);
+  }
+  return numRemoved;
+}
+
+function numRemovedMpersentTenEqualToZero(numRemoved, scriptStart) {
+  if (numRemoved % 10 === 0) {
+    console.info(
+      "%d events removed, time: %d msecs",
+      numRemoved,
+      Date.now() - scriptStart
+    );
+  }
+}
+
+function eventAddedTrue(eventsAdded, idRange, idData) {
+  if (eventsAdded) {
+    idRange.setValues(idData);
+  }
+}
+
+function forLoopForSyncToCalender(
+  data,
+  idxMap,
+  keysToAdd,
+  calEventIds,
+  calEvents,
+  numUpdates,
+  scriptStart,
+  calendar,
+  idData,
+  eventsAdded,
+  numAdded,
+  idRange
+) {
+  for (let ridx = 1; ridx < data.length; ridx++) {
+    let sheetEvent = reformatEvent(data[ridx], idxMap, keysToAdd);
+
+    // Do some error checking first
+    // if (!sheetEvent.title) {
+    //   errorAlert("must have title", sheetEvent, ridx);
+    //   continue;
+    // }
+    const newLocal = !sheetEvent.title;
+    if (newLocal) {
+      errorAlert("must have title", sheetEvent, ridx);
+      continue;
+    } else if (!(sheetEvent.starttime instanceof Date)) {
+      errorAlert("start time must be a date/time", sheetEvent, ridx);
+      continue;
+    } else if (
+      sheetEvent.endtime !== "" &&
+      !(sheetEvent.endtime instanceof Date)
+    ) {
+      errorAlert("end time must be empty or a date/time", sheetEvent, ridx);
+      continue;
+    } else if (
+      sheetEvent.endtime !== "" &&
+      sheetEvent.endtime < sheetEvent.starttime
+    ) {
+      errorAlert(
+        "end time must be after start time for event",
+        sheetEvent,
+        ridx
+      );
+      continue;
+    }
+
+    // Ignore events outside of the begin/end range desired. && If enabled, skip rows with blank/invalid start and end times
+    else if (
+      (SKIP_BLANK_ROWS &&
+        (!(sheetEvent.starttime instanceof Date) ||
+          !(sheetEvent.endtime instanceof Date))) ||
+      sheetEvent.starttime > endDate ||
+      (sheetEvent.endtime === "" && sheetEvent.starttime < beginDate) ||
+      (sheetEvent.endtime !== "" && sheetEvent.endtime < beginDate)
+    ) {
+      continue;
+    }
+
+    // Determine if spreadsheet event is already in calendar and matches
+    let addEvent = true;
+    addEvent = sheetEventId(
+      sheetEvent,
+      calEventIds,
+      addEvent,
+      calEvents,
+      numUpdates
+    );
+    console.info(
+      "%d updates, time: %d msecs",
+      numUpdates,
+      Date.now() - scriptStart
+    );
+
+    ({ eventsAdded, numAdded } = addEventIsTrue(
+      addEvent,
+      sheetEvent,
+      calendar,
+      idData,
+      ridx,
+      eventsAdded,
+      numAdded,
+      scriptStart
+    ));
+    // If the script is getting close to timing out, save the event IDs added so far to avoid lots
+    // of duplicate events.
+    scriptStartIsGreaterThanStartRunTime(scriptStart, idRange, idData);
+  }
+  return { numUpdates, eventsAdded, numAdded };
+}
+function addEventIsTrue(
+  addEvent,
+  sheetEvent,
+  calendar,
+  idData,
+  ridx,
+  eventsAdded,
+  numAdded,
+  scriptStart
+) {
+  if (addEvent) {
+    let newEvent;
+    sheetEvent.sendInvites = SEND_EMAIL_INVITES;
+    newEvent = sheetEventTime(sheetEvent, newEvent, calendar);
+    // Put event ID back into spreadsheet
+    idData[ridx][0] = newEvent.getId();
+    eventsAdded = true;
+
+    // Set event color
+    sheetEventColor(sheetEvent, newEvent);
+
+    // Throttle updates.
+    numAdded++;
+    Utilities.sleep(THROTTLE_SLEEP_TIME);
+    numAddedMpercentTenEqualToZero(numAdded, scriptStart);
+  }
+  return { eventsAdded, numAdded };
+}
+
+function sheetEventTime(sheetEvent, newEvent, calendar) {
+  if (sheetEvent.endtime === "") {
+    newEvent = calendar.createAllDayEvent(
+      sheetEvent.title,
+      sheetEvent.starttime,
+      sheetEvent
+    );
+  } else {
+    newEvent = calendar.createEvent(
+      sheetEvent.title,
+      sheetEvent.starttime,
+      sheetEvent.endtime,
+      sheetEvent
+    );
+  }
+  return newEvent;
+}
+
+function sheetEventColor(sheetEvent, newEvent) {
+  if (sheetEvent.color > 0 && sheetEvent.color < 12) {
+    newEvent.setColor("" + sheetEvent.color);
+  }
+}
+
+function numAddedMpercentTenEqualToZero(numAdded, scriptStart) {
+  if (numAdded % 10 === 0) {
+    console.info(
+      "%d events added, time: %d msecs",
+      numAdded,
+      Date.now() - scriptStart
+    );
+  }
+}
+
+function scriptStartIsGreaterThanStartRunTime(scriptStart, idRange, idData) {
+  if (Date.now() - scriptStart > MAX_RUN_TIME) {
+    idRange.setValues(idData);
+  }
+}
+
+function sheetEventId(
+  sheetEvent,
+  calEventIds,
+  addEvent,
+  calEvents,
+  numUpdates
+) {
+  if (sheetEvent.id) {
+    let eventIdx = calEventIds.indexOf(sheetEvent.id);
+    addEvent = eventIdxPositive(
+      eventIdx,
+      calEventIds,
+      addEvent,
+      calEvents,
+      sheetEvent,
+      numUpdates
+    );
+  }
+  return addEvent;
+}
+
+function eventIdxPositive(
+  eventIdx,
+  calEventIds,
+  addEvent,
+  calEvents,
+  sheetEvent,
+  numUpdates
+) {
+  if (eventIdx >= 0) {
+    calEventIds[eventIdx] = null; // Prevents removing event below
+    addEvent = false;
+    let calEvent = calEvents[eventIdx];
+    let convertedCalEvent = convertCalEvent(calEvent);
+    let eventDiffs = eventDifferences(convertedCalEvent, sheetEvent);
+    eventDiffsIsPositive(
+      eventDiffs,
+      numUpdates,
+      addEvent,
+      calEvent,
+      convertedCalEvent,
+      sheetEvent,
+      calEventIds,
+      eventIdx
+    );
+  }
+  return addEvent;
+}
+
+function eventDiffsIsPositive(
+  eventDiffs,
+  numUpdates,
+  addEvent,
+  calEvent,
+  convertedCalEvent,
+  sheetEvent,
+  calEventIds,
+  eventIdx
+) {
+  if (eventDiffs > 0) {
+    // When there are only 1 or 2 event differences, it's quicker to
+    // update the event. For more event diffs, delete and re-add the event. The one
+    // exception is if the event has guests (eventDiffs=99). We don't
+    // want to force guests to re-confirm, so go through the slow update
+    // process instead.
+    ({ numUpdates, addEvent } = eventDiffsIsSmallerThanThree(
+      eventDiffs,
+      numUpdates,
+      calEvent,
+      convertedCalEvent,
+      sheetEvent,
+      addEvent,
+      calEventIds,
+      eventIdx
+    ));
+  }
+}
+
+function eventDiffsIsSmallerThanThree(
+  eventDiffs,
+  numUpdates,
+  calEvent,
+  convertedCalEvent,
+  sheetEvent,
+  addEvent,
+  calEventIds,
+  eventIdx
+) {
+  if (eventDiffs < 3 && eventDiffs !== EVENT_DIFFS_WITH_GUESTS) {
+    numUpdates += updateEvent(calEvent, convertedCalEvent, sheetEvent);
+  } else {
+    addEvent = true;
+    calEventIds[eventIdx] = sheetEvent.id;
+  }
+  return { numUpdates, addEvent };
 }
 
 // Set up a trigger to automatically update the calendar when the spreadsheet is
