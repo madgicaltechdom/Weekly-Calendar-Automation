@@ -1,0 +1,92 @@
+function createPivotTables() {
+  let ss = SpreadsheetApp.getActiveSpreadsheet();
+  let scoreDetailsSheet = ss.getActiveSheet();
+  let activeSheetName = scoreDetailsSheet.getName();
+  console.log("*************",activeSheetName);
+  let pivotTableName = "Report of " + activeSheetName;
+  let pivotTableSheet = ss.getSheetByName(pivotTableName);
+
+  if (!pivotTableSheet) {
+    pivotTableSheet = ss.insertSheet(pivotTableName);
+  }
+
+  let range1 = scoreDetailsSheet.getDataRange();
+  let pivotTable1 = pivotTableSheet.getRange("A1").createPivotTable(range1);
+
+  pivotTable1.addRowGroup(13);
+  let sumOfTotalTime1 = pivotTable1.addPivotValue(12, SpreadsheetApp.PivotTableSummarizeFunction.SUM);
+  sumOfTotalTime1.setDisplayName("SUM of Total Time");
+  
+  let countOfTitle1 = pivotTable1.addPivotValue(1, SpreadsheetApp.PivotTableSummarizeFunction.COUNTA);
+
+  countOfTitle1.setDisplayName("Number of Events");
+  let avgOfTotalTime1 = pivotTable1.addPivotValue(12, SpreadsheetApp.PivotTableSummarizeFunction.AVERAGE);
+  avgOfTotalTime1.setDisplayName("AVERAGE of Total Time");
+  let maxOfTotalTime1 = pivotTable1.addPivotValue(12, SpreadsheetApp.PivotTableSummarizeFunction.MAX);
+  maxOfTotalTime1.setDisplayName("MAX of Total Time");
+  let minOfTotalTime1 = pivotTable1.addPivotValue(12, SpreadsheetApp.PivotTableSummarizeFunction.MIN);
+  minOfTotalTime1.setDisplayName("MIN of Total Time");
+
+  let dataRange1 = pivotTableSheet.getRange("B2:F9");
+  dataRange1.setNumberFormat("#0.0");
+  let typeColumn1 = pivotTableSheet.getRange("A2:A9");
+  typeColumn1.setHorizontalAlignment("left"); 
+  let headerColumn1 = pivotTableSheet.getRange("H1");
+  headerColumn1.setHorizontalAlignment("left"); 
+
+  pivotTableSheet.getRange(pivotTableSheet.getLastRow() + 1, 1).activate();
+
+  let range2 = scoreDetailsSheet.getDataRange();
+  let pivotTable2 = pivotTableSheet.getRange("H1").createPivotTable(range2);
+
+  pivotTable2.addRowGroup(13);
+  pivotTable2.addColumnGroup(17);
+
+  let sumOfTotalTime2 = pivotTable2.addPivotValue(12, SpreadsheetApp.PivotTableSummarizeFunction.SUM);
+  sumOfTotalTime2.setDisplayName("SUM of Total Time");
+
+  let dataRange2 = pivotTableSheet.getRange("I2:J9");
+  dataRange2.setNumberFormat("#0.0");
+  let typeColumn2 = pivotTableSheet.getRange("H2:H9");
+  typeColumn2.setHorizontalAlignment("left"); 
+  let headerColumn2 = pivotTableSheet.getRange("A1");
+  headerColumn2.setHorizontalAlignment("left"); 
+
+  pivotTableSheet.getRange(pivotTableSheet.getLastRow() + 1, 8).activate();
+
+  // let report_sheet = ss.getSheetByName(pivotTableName);
+  // let report_sheet_value = report_sheet.getRange(2,1,ss.getLastRow()-3,1).getValues();
+
+  // let setting_sheet_value = ss.getSheetByName("Setting").getDataRange().getValues();
+  // let require_event = (setting_sheet_value[5][1]).split(",");
+  // console.log(require_event);
+  // console.log("*****************",report_sheet_value);
+
+  // for (let p of require_event){
+  //   let flag = false;
+  //   for (let q of report_sheet_value){
+  //     if(q.includes(p)){
+  //       flag = true;
+  //       break;
+  //     }
+  //   }
+  //   if(flag === false){
+  //     report_sheet_value.push([p]);
+  //   }
+    
+  // }
+  // console.log(report_sheet_value);
+
+  // let head = ["Type","Min Count","Max Count","Min Avg Time","Max Avg Time","Min Time","Max Time","Min Total Time","Max Total Time"]
+  // let selectRange = report_sheet.getRange(ss.getLastRow()+3,1,1,head.length);
+  // selectRange.setFontWeight("bold");
+  // selectRange.setValues([head]);
+
+
+  // let selectColoumRange = report_sheet.getRange(ss.getLastRow()+1,1,report_sheet_value.length,1);
+  // selectColoumRange.setFontWeight('bold');
+  // selectColoumRange.setValues(report_sheet_value);
+
+}
+
+
