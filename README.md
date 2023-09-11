@@ -19,22 +19,30 @@ To begin, go to Google Sheets, an online tool for creating spreadsheets. Create 
 ## Sync From Calendar
 * The syncFromCalendar() function will take the start date, end date, and user email ID from the sheet name and then fetch the Google Calendar with the email ID, start date, and end date, then get all events in between the mentioned dates and set them in the Google Sheet.
 
-* setDateInColumnN() function will fetch events find the event date and set it in the "Date" column.
+* setDateInColumnN() function will fetch events, find the event date, and set it in the "Date" column.
 
-* setAdjustedDateInColumnO() function will fetch events and find the current week date of Monday and set it in the "Week of" column.
+* setAdjustedDateInColumnO() function will fetch events, find the current week date of Monday, and set it in the "Week of" column.
 
 * getWeekdayName() function will fetch events find the event day and set it in the "Day of week" column.
 
-* extractTitles() function will fetch events and find that this event is the meeting of alone time spent and set it in the "Meeting or Alone" column.
+* extractTitles() function will fetch events, find that this event is the meeting of alone time spent, and set it in the "Meeting or Alone" column.
 
 * determinemeetingStatus() function will fetch events find the status of meetings and set it in the "RSVP Status" column.
 
 
 ## Update to Calendar
 * The syncToCalendar() function will take the start date, end date, and user email ID from the sheet name and the event data from the sheet, then fetch the Google Calendar with the email ID, start date, and end date, then create the new events on the calendar using event data in between the mentioned dates and set the rest of the information automatic in the Google Sheet, like the event ID, creator name, etc.
+
+* createIdxMap() function will find the index of the event and return the event data.
+
+* missingFields() function will check all fields with event data, store the missing fields and return them.
+
+* eventAddedTrue() function retrieves user mai ID data from a spreadsheet and updates the event fields in the Calendar.
+
+* setEventData() function retrieves user mai ID data from a spreadsheet, finds the event type, and sets it in the "Event Type" column.
   
 ## Generate Report
-* The createPivotTables() function will take the event's data from the email sheet and create two reports. First, this report provides details related to different event types recorded in the Google calendar. including the total time, title count, average time, maximum time, and minimum time. The second report presents details of event types categorised as "meeting" or "alone," including the total time for each category and the grand total.
+* The createPivotTables() function will take the event's data from the email sheet and create two reports. First, this report provides details related to different event types recorded in the Google Calendar. including the total time, title count, average time, maximum time, and minimum time. The second report presents details of event types categorised as "meeting" or "alone," including the total time for each category and the grand total.
   
 ## Validate Events
 * The validationEvent() function will take the report data from the report sheet and the validation data from the setting sheet. The function retrieves report data and validation data, iterates over each data point, and If you don't create the event for the required event and your event count does not match what is mentioned in the setting sheet, then you will get the message in the mail.
