@@ -18,10 +18,15 @@ To begin, go to Google Sheets, an online tool for creating spreadsheets. Create 
 ## Function Applied on Calendar Automation V-2
 ## Sync From Calendar
 * The syncFromCalendar() function will take the start date, end date, and user email ID from the sheet name and then fetch the Google Calendar with the email ID, start date, and end date, then get all events in between the mentioned dates and set them in the Google Sheet.
+
 * setDateInColumnN() function will fetch events find the event date and set it in the "Date" column.
+
 * setAdjustedDateInColumnO() function will fetch events and find the current week date of Monday and set it in the "Week of" column.
+
 * getWeekdayName() function will fetch events find the event day and set it in the "Day of week" column.
+
 * extractTitles() function will fetch events and find that this event is the meeting of alone time spent and set it in the "Meeting or Alone" column.
+
 * determinemeetingStatus() function will fetch events find the status of meetings and set it in the "RSVP Status" column.
 
 
