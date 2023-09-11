@@ -12,12 +12,18 @@ To begin, go to Google Sheets, an online tool for creating spreadsheets. Create 
 
     1. *Setting* She - This sheet contains all the necessary credentials for event types, as well as the start and end dates for the calendar. Within this timeframe, events will be retrieved and generated, including Start Date, End Date, Event Type Separator, Non-separator Event type, Required Event's Type, Min Count, Max Count, Min Avg Time, Max Avg Time, Min Time, Max Time, Min Total Time and Max Total Time.
 
-    2. *example@gmail.com* Sheet - We will use this sheet to generate duplicates for this sheet. The columns it has are: Title, Description, Location, Start Time, End Time, Guests, Color, Id, Creator Name, Hour, Minutes, Total Time, Event Type, Date, Week of, Day of week, Meeting or Alone and RSVP Status.
+    2. *example@gmail.com* Sheet - We will use this sheet to generate duplicates for this sheet. The columns it has are: Title, Description, Location, Start Time, End Time, Guests, Color, Id, Creator Name, Hour, Minutes, Total Time, Event Type, Date, Week of, Day of the week, Meeting or Alone, and RSVP Status.
   
 
 ## Function Applied on Calendar Automation V-2
 ## Sync From Calendar
 * The syncFromCalendar() function will take the start date, end date, and user email ID from the sheet name and then fetch the Google Calendar with the email ID, start date, and end date, then get all events in between the mentioned dates and set them in the Google Sheet.
+* setDateInColumnN() function will fetch events find the event date and set it in the "Date" column.
+* setAdjustedDateInColumnO() function will fetch events and find the current week date of Monday and set it in the "Week of" column.
+* getWeekdayName() function will fetch events find the event day and set it in the "Day of week" column.
+* extractTitles() function will fetch events and find that this event is the meeting of alone time spent and set it in the "Meeting or Alone" column.
+* determinemeetingStatus() function will fetch events find the status of meetings and set it in the "RSVP Status" column.
+
 
 ## Update to Calendar
 * The syncToCalendar() function will take the start date, end date, and user email ID from the sheet name and the event data from the sheet, then fetch the Google Calendar with the email ID, start date, and end date, then create the new events on the calendar using event data in between the mentioned dates and set the rest of the information automatic in the Google Sheet, like the event ID, creator name, etc.
