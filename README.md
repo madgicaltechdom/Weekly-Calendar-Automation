@@ -54,7 +54,7 @@ To begin, go to Google Sheets, an online tool for creating spreadsheets. Create 
 ## Links
 * [Document Link](https://docs.google.com/document/d/1cI38RjcCSG3LHQDfrOZu2rRD7uOv4kzGzoh5ddFrDR8/edit?usp=sharing)
 * [Sheet Link](https://docs.google.com/spreadsheets/d/1yhGdYYijaVlwwRiGYh-MRt1_YktRRO72pUlGfcaQU98/edit?usp=sharing)
-* [Demo Video Link](https://drive.google.com/file/d/1SkHHLBWRwh_5WkhaebZna9hRh5EYByH4/view?usp=sharing)
+* [Demo Video Link](https://drive.google.com/file/d/1JdCEf-9G677x59uFAvxHp3u-jEgif8_A/view?usp=sharing)
 
 ## Contributing
 
