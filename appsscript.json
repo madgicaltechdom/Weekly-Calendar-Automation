@@ -1,0 +1,29 @@
+{
+  "timeZone": "Asia/Kolkata",
+  "dependencies": {},
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "sheets": {
+    "macros": [
+      {
+        "menuName": "calFetch",
+        "functionName": "calFetch"
+      },
+      {
+        "menuName": "postTasks",
+        "functionName": "postTasks",
+        "defaultShortcut": "Ctrl+Alt+Shift+1"
+      }
+    ]
+  },
+  "addOns": {
+    "common": {
+      "logoUrl": "https://drive.google.com/drive/folders/1W_-zcs7vSqR_cxXEm0ryGl4T7dwuQERv",
+      "name": "Apply Trigger For Sync",
+      "homepageTrigger": {
+        "runFunction": "syncFromCalendar",
+        "enabled": true
+      }
+    }
+  }
+}
