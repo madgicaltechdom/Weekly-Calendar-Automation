@@ -14,10 +14,11 @@ function createTrigger2() {
     .create();
 }
 
-function createTrigger3() {
-  ScriptApp.newTrigger('validateToAll')
+function triggerOnValidateToAll() {
+  ScriptApp.newTrigger("validateToAll")
     .timeBased()
     .onWeekDay(ScriptApp.WeekDay.SATURDAY)
     .atHour(22)
+    .everyWeeks(1)
     .create();
 }
