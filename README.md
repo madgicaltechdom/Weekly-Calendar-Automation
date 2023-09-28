@@ -45,7 +45,8 @@ To begin, go to Google Sheets, an online tool for creating spreadsheets. Create 
   
 ## Validate My Sheet
 * The TaskPivot() function will take the event's data from the email sheet and create many reports. First, this report provides details related to different task events recorded in the Google Calendar. including the total time, title count, average time, maximum time, and minimum time. All reports show the same data for video events, reading events, PPTs, etc.
-    
+
+
 * The validationEvent() After creating the all pivot, this function will take the report data from the report sheet and the validation data from the Weekly Schedule CheckList sheet. The function retrieves report data and validation data, iterates over each data point, and If you don't create the event for the required event and your event count does not match what is mentioned in the Weekly Schedule CheckList sheet, then you will get the message in the mail.
 
 
