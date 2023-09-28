@@ -53,7 +53,6 @@ To begin, go to Google Sheets, an online tool for creating spreadsheets. Create 
 * *UnitTestingApp.min.js* and *MockData.min.js* files are common files that are used in unit testing. We need to write manual data in the *MockData* File for checking unit testing offline or fetch data from a spreadsheet.
 
 ## Links
-* [Document Link](https://docs.google.com/document/d/1cI38RjcCSG3LHQDfrOZu2rRD7uOv4kzGzoh5ddFrDR8/edit?usp=sharing)
 * [Sheet Link](https://docs.google.com/spreadsheets/d/1RYmXstNNk_fxi9Ao5nEdaFDvyZlN1CqYf6HMogVXTAg/edit?usp=sharing)
 
 
