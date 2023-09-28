@@ -1,0 +1,32 @@
+{
+  "timeZone": "Asia/Kolkata",
+  "dependencies": {
+  },
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "sheets": {
+    "macros": [{
+      "menuName": "calFetch",
+      "functionName": "calFetch"
+    }, {
+      "menuName": "postTasks",
+      "functionName": "postTasks",
+      "defaultShortcut": "Ctrl+Alt+Shift+1"
+    }, {
+      "menuName": "syncFromCalendar",
+      "functionName": "syncFromCalendar",
+      "defaultShortcut": "Ctrl+Alt+Shift+1"
+    }, {
+      "menuName": "syncToCalendar",
+      "functionName": "syncToCalendar",
+      "defaultShortcut": "Ctrl+Alt+Shift+0"
+    }, {
+      "menuName": "Task Pivot",
+      "functionName": "TaskPivot",
+      "defaultShortcut": "Ctrl+Alt+Shift+2"
+    }, {
+      "menuName": "validateToAll",
+      "functionName": "validateToAll"
+    }]
+  }
+}
