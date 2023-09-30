@@ -14,7 +14,7 @@ To begin, go to Google Sheets, an online tool for creating spreadsheets. Create 
 
     2. *Team's Member Details* Sheet - This sheet contains all details of the team name, team lead name, and team member name as well. 
 
-    3. *example@gmail.com* Sheet - We will use this sheet to generate duplicates for this sheet. The columns it has are: Title, Description, Location, Start Time, End Time, Guests, Color, Id, Creator Name, Hour, Minutes, Total Time, Event Type, Date, Week of, Day of the week, Meeting or Alone, and RSVP Status.
+    3. *example@gmail.com* Sheet - We will use this sheet to generate duplicates for this sheet. The columns it has are: Title, Description, Location, Start Time, End Time, Guests, Color, Id, Creator Name, Hour, Minutes, Total Time.
   
 
 ## Function Applied on weekly calendar Automation Tool
