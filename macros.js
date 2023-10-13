@@ -4,7 +4,9 @@ if (typeof require !== "undefined") {
   SendMailNodification = require("./sendMailNodificationHelper.js");
 }
 let textMsg = "";
-
+let objArray = []; // Initialize an array to store objArrays
+let datas;
+let teamMemberData;
 function TaskPivot() {
   clearSpecificRange();
   const check_list_sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Weekly Schedule CheckList").getDataRange().getValues();
@@ -13,7 +15,7 @@ function TaskPivot() {
   const sheet = doc.getActiveSheet();
   sheet.deleteColumns(13, 35);
   const headers = sheet.getRange("A1:L1").getValues()[0];
-  
+
   const colIdx = headers.reduce((o, k, i) => {
     o[k] = i + 1;
     return o;
@@ -37,7 +39,7 @@ function TaskPivot() {
   createPivotTable("AQ1", "Action Item", sheet, colIdx, data);
   createPivotTable("AV1", "Review", sheet, colIdx, data);
   let textSearch = sheet.createTextFinder("Grand Total").findAll();
-  
+
   validateTasks(textSearch, sheet, check_list_sheet);
 }
 
@@ -46,7 +48,7 @@ function clearSpecificRange() {
   let sheetName = spreadsheet.getActiveSheet().getName();
   let sheet = spreadsheet.getSheetByName(sheetName);
 
-  let rangeToClear = sheet.getRange(1,13, sheet.getLastRow() -1 +1, sheet.getLastColumn() - 12 + 1);
+  let rangeToClear = sheet.getRange(1, 13, sheet.getLastRow() - 1 + 1, sheet.getLastColumn() - 12 + 1);
   // console.log(rangeToClear.getA1Notation());
   rangeToClear.clearContent();
 }
@@ -76,7 +78,7 @@ function createPivotTable(startCol, filterTask, sheet, colIdx, data) {
   return pivotTable;
 }
 
-function validateTasks(textSearch, sheet, check_list_sheet,flag) {
+function validateTasks(textSearch, sheet, check_list_sheet, flag) {
   for (let i = 0; i < textSearch.length * 1; i++) {
     let row = textSearch[i].getRow();
     let column = textSearch[i].getColumn();
@@ -97,16 +99,16 @@ function validateTasks(textSearch, sheet, check_list_sheet,flag) {
       feedbackTaskValidation(sheet, row, column, check_list_sheet);
     } else if (column == 43) {
       actionItemValidation(sheet, row, column, check_list_sheet);
-    }else if (column == 48) {
+    } else if (column == 48) {
       reviewTicketsValidation(sheet, row, column, check_list_sheet);
     }
   }
 
   let email;
-  if(flag === true){
+  if (flag === true) {
     email = sheet.getSheetName();
   }
-  else{
+  else {
     let sheetName = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
     email = sheetName.getName();
   }
@@ -115,43 +117,97 @@ function validateTasks(textSearch, sheet, check_list_sheet,flag) {
     textMsg,
     email
   );
-  
+
 
   const team_member_sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Team's Member Details").getDataRange().getValues();
-  if(flag !== true){
-    if(sendEmailData["message"] !== ""){
+  if (flag !== true) {
+    if (sendEmailData["message"] !== "") {
       MailApp.sendEmail(email, sendEmailData["textSub"], sendEmailData["message"]);
     }
-    else{
+    else {
       console.log("you follow the all 👍 checklist points.  😀 Good!");
     }
-  
+
   }
-  else if (flag === true){
-    for(let t=1; t<team_member_sheet.length ; t++){
-      let teamMemberData = team_member_sheet[t][2].split(',');
-      if (teamMemberData.includes(email) && (sendEmailData["message"] !== "")){
-        if(email !== team_member_sheet[t][1]){
-          MailApp.sendEmail(team_member_sheet[t][1], sendEmailData["textSub"]+"of "+email, sendEmailData["message"]);
-          break
+  else if (flag === true) {
+
+    function check() {
+      for (let t = 1; t < team_member_sheet.length; t++) {
+        teamMemberData = team_member_sheet[t][2].split(',');
+
+        if (teamMemberData.includes(email) && sendEmailData["message"] !== "") {
+          if (email !== team_member_sheet[t][1]) {
+            let obj = {
+              'TeamLeadEmail': team_member_sheet[t][1],
+              'teamMember': email,
+              'message': sendEmailData["message"]
+            };
+            objArray.push(obj);
+
+          }
         }
       }
+      return objArray
     }
+    let newdata = check(team_member_sheet)
+    const uniqueEmails = new Set();
+    newdata.forEach(obj => {
+      uniqueEmails.add(obj.TeamLeadEmail);
+    });
+
+    const resultArray = [];
+
+    [...uniqueEmails].forEach(email => {
+      const teamMembers = newdata
+        .filter(obj => obj.TeamLeadEmail === email)
+        .map(obj => ({ teamMember: obj.teamMember, message: obj.message }));
+
+      resultArray.push({
+        TeamLeadEmail: email,
+        teamMembers: teamMembers
+      });
+    });
+
+    resultArray.forEach((member) => {
+
+      const teamLead = member.TeamLeadEmail
+      console.log("*****************",teamLead);
+
+      const teamMembers = member.teamMembers;
+      const subject = "Team Member Updates";
+      let messageBody = "Hello,\n\n";
+
+      teamMembers.forEach(member => {
+        messageBody += `Team Member: ${member.teamMember}\n`;
+        messageBody += `Missing rules:\n${member.message}\n\n`;
+      });
+
+      if (teamMemberData.length == teamMembers.length) {
+        console.log("hhhhhhhhhhhheeeeeeeeeee");
+        MailApp.sendEmail({
+          to: teamLead,
+          subject: subject,
+          body: messageBody,
+        });
+      }
+
+    })
   }
 }
 
+
 function videoTaskValidation(sheet, row, column, check_list_sheet) {
-  if(check_list_sheet[4][1] === true){
+  if (check_list_sheet[4][1] === true) {
     videoTicketCountLessThenFiveInWeek(sheet, row, column);
   }
-  if (check_list_sheet[6][1] === true){
+  if (check_list_sheet[6][1] === true) {
     const pivotV_data = sheet
-    .getRange(`R1:V${sheet.getRange(row, column + 4).getValue() + 2}`)
-    .getValues();
-    for (let i = 1; i < pivotV_data.length-1; i++) {
+      .getRange(`R1:V${sheet.getRange(row, column + 4).getValue() + 2}`)
+      .getValues();
+    for (let i = 1; i < pivotV_data.length - 1; i++) {
       let videoLoop = i;
       let flag = videoPresentationIsScheduledBeforeSixPM(pivotV_data, videoLoop);
-      if (flag === false){
+      if (flag === false) {
         textMsg = textMsg + "The Video presentation is not scheduled before 6:00 PM. \n";
         break;
       }
@@ -160,31 +216,31 @@ function videoTaskValidation(sheet, row, column, check_list_sheet) {
 }
 
 function readingTaskValidation(sheet, row, column, check_list_sheet) {
-  if (check_list_sheet[3][1] === true){
+  if (check_list_sheet[3][1] === true) {
     readingTicketCount(sheet, row, column);
     Logger.log(sheet.getRange(row, column + 3).getValue());
   }
-  else{
-    console.log(check_list_sheet[3][0],"this check list is False.");
+  else {
+    console.log(check_list_sheet[3][0], "this check list is False.");
   }
 }
 
 function pptTaskValidation(sheet, row, column, check_list_sheet) {
-  if(check_list_sheet[5][1] === true){
+  if (check_list_sheet[5][1] === true) {
     pptTaskCountForWeek(sheet, row, column);
     Logger.log(sheet.getRange(row, column + 3).getValue());
   }
 }
 
 function weeklyScheduleValidation(sheet, row, column, check_list_sheet) {
-  if (check_list_sheet[9][1] === true){
+  if (check_list_sheet[9][1] === true) {
     weeklyScheduleTicketCountIsOne(sheet, row, column);
     Logger.log(sheet.getRange(row, column + 3).getValue());
   }
 }
 
 function feedbackTaskValidation(sheet, row, column, check_list_sheet) {
-  if (check_list_sheet[7][1] === true){
+  if (check_list_sheet[7][1] === true) {
     feedBackCountForWeek(sheet, row, column);
     Logger.log(sheet.getRange(row, column + 3).getValue());
     const pivotF_data = sheet
@@ -199,14 +255,14 @@ function feedbackTaskValidation(sheet, row, column, check_list_sheet) {
 }
 
 function actionItemValidation(sheet, row, column, check_list_sheet) {
-  if (check_list_sheet[8][1] === true){
+  if (check_list_sheet[8][1] === true) {
     actionItemTicketCount(sheet, row, column);
     Logger.log(sheet.getRange(row, column + 3).getValue());
   }
 }
 
 function reviewTicketsValidation(sheet, row, column, check_list_sheet) {
-  if (check_list_sheet[10][1] === true){
+  if (check_list_sheet[10][1] === true) {
     reviewTicketCount(sheet, row, column);
     Logger.log(sheet.getRange(row, column + 3).getValue());
   }
@@ -276,7 +332,7 @@ function videoTicketCountLessThenFiveInWeek(sheet, row, column) {
 function videoPresentationIsScheduledBeforeSixPM(pivotV_data, videoLoop) {
   if (
     // new Date(pivotV_data[videoLoop][2]).getDay() === 4 &&
-    new Date(pivotV_data[videoLoop][2]).getHours() < 18 
+    new Date(pivotV_data[videoLoop][2]).getHours() < 18
     // pivotV_data[videoLoop][0].toUpperCase().includes("VIDEO" && "PPT")
   ) {
     Logger.log(
@@ -285,7 +341,7 @@ function videoPresentationIsScheduledBeforeSixPM(pivotV_data, videoLoop) {
       ).toLocaleString("en-us", { weekday: "long" })}`
     );
     return true;
-    
+
   } else {
     return false;
   }
@@ -353,12 +409,12 @@ function actionItemTicketCount(sheet, row, column) {
 }
 
 function reviewTicketCount(sheet, row, column) {
-  
-  if (sheet.getRange(row, column + 4).getValue() >=10) {
+
+  if (sheet.getRange(row, column + 4).getValue() >= 10) {
     Logger.log("The Review ticket count is Grater then or equal to 10 for a week.");
   } else {
     textMsg =
-      textMsg +"The Review ticket count is Less then 10 for a week.\n";
+      textMsg + "The Review ticket count is Less then 10 for a week.\n";
   }
 }
 
@@ -366,17 +422,17 @@ function taskColumn(sheet, column, row, check_list_sheet) {
   const taskCount = sheet.getRange(row, column + 4).getValue();
   const data = sheet.getRange(`M1:Q${taskCount + 2}`).getValues();
   const taskHours = sheet.getRange(row, column + 3).getValue();
-  if(check_list_sheet[0][1] === true){
+  if (check_list_sheet[0][1] === true) {
     averageTaskHourIsGreaterThenThreeHour(taskHours, taskCount);
     oneWeekTaskHourIsThirtySix(taskHours);
     taskCountIsGeaterThenTen(taskCount);
   }
-  if(check_list_sheet[1][1] && check_list_sheet[2][1] === true){
-    for (let j = 1; j< data.length-1; j++) {
+  if (check_list_sheet[1][1] && check_list_sheet[2][1] === true) {
+    for (let j = 1; j < data.length - 1; j++) {
       let loop = j;
       taskHourAreLessThenFour(data, loop);
       let flag = taskDiscription(data, loop);
-      if (flag === false){
+      if (flag === false) {
         textMsg = textMsg + "The task doesn't has description in it. \n";
         break;
       }
