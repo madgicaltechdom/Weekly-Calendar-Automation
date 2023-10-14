@@ -23,6 +23,7 @@ function TaskPivot() {
   const data = sheet.getDataRange();
 
   sheet.insertColumnsAfter(13, 35);
+  
   //Create Pivot Table for Tasks
   createPivotTable("M1", "Task", sheet, colIdx, data);
   //Create Pivot Table for Videos
@@ -133,6 +134,11 @@ function validateTasks(textSearch, sheet, check_list_sheet, flag) {
 
     function check() {
       for (let t = 1; t < team_member_sheet.length; t++) {
+
+  
+
+
+        
         teamMemberData = team_member_sheet[t][2].split(',');
 
         if (teamMemberData.includes(email) && sendEmailData["message"] !== "") {
@@ -440,4 +446,41 @@ function taskColumn(sheet, column, row, check_list_sheet) {
   }
 }
 
+function checkAndSendEmailForNotValidate() {
+  function getAllSheetNames() {
+    var sheets = SpreadsheetApp.getActiveSpreadsheet().getSheets();
+    var sheetNames = [];
 
+    for (var i = 0; i < sheets.length; i++) {
+      sheetNames.push(sheets[i].getName());
+    }
+
+    return sheetNames;
+  }
+
+  var userSheetNames = getAllSheetNames();
+
+  for (var i = 0; i < userSheetNames.length; i++) {
+    var sheetName = userSheetNames[i];
+
+    if (
+      sheetName !== "Weekly Schedule CheckList" &&
+      sheetName !== "Team's Member Details" &&
+      sheetName !== "example@gmail.com"
+    ) {
+      var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+      var valueM1 = sheet.getRange("M1").getValue(); 
+
+      if (!valueM1) {
+        var subject = 'Not Validate sheet';
+        var body = `Dear Team Member,\n\nYou have not yet validated your tasks. Please review and validate them as soon as possible.\n\nThank you,\n`+sheetName;
+
+        MailApp.sendEmail({
+          to: sheetName, // Replace with your email address
+          subject: subject,
+          body: body,
+        });
+      }
+    }
+  }
+}
