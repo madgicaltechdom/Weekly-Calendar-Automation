@@ -49,6 +49,9 @@ To begin, go to Google Sheets, an online tool for creating spreadsheets. Create 
 
 * The validationEvent() After creating the all pivot, this function will take the report data from the report sheet and the validation data from the Weekly Schedule CheckList sheet. The function retrieves report data and validation data, iterates over each data point, and If you don't create the event for the required event and your event count does not match what is mentioned in the Weekly Schedule CheckList sheet, then you will get the message in the mail.
 
+## send an email notification to the lead if team members miss the rules while preparing a calendar.
+*validate_to_all.js,In this file -validateToAll()  function will run every week on saturday, this function when run it will send notification to team lead, if team members are properly preparing their calendar. In the event that a team member fails to do so, The team lead will recieve an email notification containing the necessary details.
+
 
 ## Explaining Unit testing files
 * *UnitTestingApp.min.js* and *MockData.min.js* files are common files that are used in unit testing. We need to write manual data in the *MockData* File for checking unit testing offline or fetch data from a spreadsheet.
